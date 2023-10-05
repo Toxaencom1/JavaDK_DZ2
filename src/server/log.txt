@@ -1,0 +1,14 @@
+2023-09-29 13:33 Test1: tested
+2023-09-29 13:42 Test1: sdfg
+2023-09-29 13:42 Test2: WhatsUP
+2023-09-29 13:57 Test1: fine)
+2023-09-29 14:00 Test1: and you?
+2023-09-29 14:13 Test2: i am fine, Thank you!
+2023-09-29 14:30 Test1: let`s go beer?
+2023-09-29 14:34 Test2: go!!!
+2023-09-29 14:34 Test1: call a taxi!
+2023-09-29 14:36 Test2: READY?
+2023-09-29 14:36 Test1: Yes
+2023-09-29 14:37 Test2: Good job!
+2023-09-29 14:47 Test1: i am drunk!
+2023-09-29 14:47 Test2: i am drunk too!

@@ -1,6 +1,10 @@
 package server;
 
 public interface ServerView {
-    //TODO сделать интерфейс сервера
+    void printToMessageLog(String text);
+
+    void printMessageToTempLog(String message);
+
+    Server getServer();
 
 }

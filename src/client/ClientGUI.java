@@ -7,6 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class ClientGUI extends JFrame implements ClientView {
@@ -17,11 +19,10 @@ public class ClientGUI extends JFrame implements ClientView {
 
     private final Client client;
     private JTextArea textArea;
-    private JTextField textFieldLogin, textFieldIP, textFieldPort, passwordField;
+    private JTextField textFieldLogin, textFieldIP, textFieldPort, passwordField, textFieldSend;
     private JPanel panelLogin;
     private JButton btnLogin;
     private JLabel loginName = new JLabel("");
-    private boolean connected;
 
     public ClientGUI(Server server) {
         this.client = new Client(this, server);
@@ -68,7 +69,7 @@ public class ClientGUI extends JFrame implements ClientView {
     private Component sendMessagePanel() {
         JPanel panelSendMessage = new JPanel(new GridLayout(1, 2));
         JButton btnSend = new JButton("Send");
-        JTextField textFieldSend = new JTextField();
+        textFieldSend = new JTextField();
         textFieldSend.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -79,25 +80,28 @@ public class ClientGUI extends JFrame implements ClientView {
             }
         });
         btnSend.addActionListener(e -> {
-            textArea.setText(textFieldSend.getText());
-            //TODO не забыть сделать листнер
-            textFieldSend.setText("");
+            sendMessage();
         });
         panelSendMessage.add(textFieldSend);
         panelSendMessage.add(btnSend);
         return panelSendMessage;
     }
+
     private void connectToServer() {
         if (client.isServerWorking()) {
             Account user = new Account();
             user.setIp(textFieldIP.getText());
             user.setPort(textFieldPort.getText());
             user.setName(textFieldLogin.getText());
+            loginName.setText(textFieldLogin.getText());
             user.setPass(passwordField.getText());
             client.setUser(user);
             if (client.checkUserToConnect()) {
                 client.setConnected(true);
+                client.appendToList(this);
+                client.sendMessageToTempLog("User " + client.getUser().getName() + " is connected\n");
                 panelLogin.setVisible(false);
+                textArea.setText(client.getHistory());
                 JOptionPane.showMessageDialog(textArea, "You are logged in as: " + user.getName());
             } else {
                 JOptionPane.showMessageDialog(panelLogin, "Login or password do not match");
@@ -105,5 +109,37 @@ public class ClientGUI extends JFrame implements ClientView {
         } else {
             JOptionPane.showMessageDialog(panelLogin, "Server is offline");
         }
+    }
+
+    private void sendMessage() {
+        if (client.isServerWorking() && client.isConnected()) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            Date currentDate = new Date();
+            String formattedDate = sdf.format(currentDate);
+            String formattedMessage = String.format(formattedDate + " "
+                    + client.getUser().getName() + ": "
+                    + textFieldSend.getText() + "\n");
+            client.sendMessage(formattedMessage);
+            client.sendMessageToTempLog(formattedMessage);
+            textFieldSend.setText("");
+        } else {
+            JOptionPane.showMessageDialog(panelLogin, "Connection failed");
+        }
+    }
+
+    @Override
+    public void printMessage(String text) {
+        textArea.append(text);
+    }
+
+    @Override
+    public void disconnect() {
+        client.disconnect();
+        panelLogin.setVisible(true);
+    }
+
+    @Override
+    public String getLoginName() {
+        return loginName.getText();
     }
 }

@@ -19,6 +19,7 @@ public class Storage implements FileJob{
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Error when writing text to a file: " + e.getMessage());
+            //TODO добавить ошибку в текстАреа сервера
         }
     }
 

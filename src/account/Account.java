@@ -59,7 +59,7 @@ public class Account {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Account account = (Account) o;
-        return Objects.equals(name, account.name)
+        return name.equalsIgnoreCase(account.name)
                 && Objects.equals(pass, account.pass)
                 && Objects.equals(ip, account.ip)
                 && Objects.equals(port, account.port);

@@ -1,5 +1,8 @@
 package client;
 
 public interface ClientView {
-    //TODO сделать интерфейс клиента
+    void printMessage(String text);
+    void disconnect();
+    String getLoginName();
+
 }

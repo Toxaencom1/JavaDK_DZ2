@@ -5,19 +5,18 @@ import server.Server;
 
 public class Client {
     private Account user;
-    private ClientView clientView;
     private final Server server;
     private boolean connected;
 
-    public Client(ClientView clientView,Server server) {
+    public Client(ClientView clientView, Server server) {
         this.server = server;
-        this.clientView = clientView;
     }
 
     public boolean checkUserToConnect() {
         return server.checkConnection(this);
     }
-    public void disconnect(){
+
+    public void disconnect() {
         setConnected(false);
     }
 
@@ -35,5 +34,25 @@ public class Client {
 
     public Account getUser() {
         return user;
+    }
+
+    public String getHistory() {
+        return server.readFromLog();
+    }
+
+    public void sendMessage(String text) {
+        server.writeMessageToLog(text);
+    }
+
+    public void sendMessageToTempLog(String message) {
+        server.sendMessageToTempLog(message);
+    }
+
+    public void appendToList(ClientGUI clientGUI) {
+        server.clientAdd(clientGUI);
+    }
+
+    public boolean isConnected() {
+        return connected;
     }
 }

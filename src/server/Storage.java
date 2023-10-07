@@ -1,10 +1,12 @@
 package server;
 
+import exceptions.FileProblemsEx;
+
 import java.io.*;
 
 public class Storage implements FileJob{
     @Override
-    public void write(String text, String filePath) {
+    public void write(String text, String filePath) throws FileProblemsEx {
         try {
             File file = new File(filePath);
             if (!file.exists()){
@@ -17,14 +19,12 @@ public class Storage implements FileJob{
             fileWriter.close();
             System.out.println("Log updated");
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Error when writing text to a file: " + e.getMessage());
-            //TODO добавить ошибку в текстАреа сервера
+            throw new FileProblemsEx("Error when writing text to a file: " + e.getMessage());
         }
     }
 
     @Override
-    public String read(String fileName) {
+    public String read(String fileName) throws FileProblemsEx {
         StringBuilder sb = new StringBuilder();
         try {
             FileReader fileReader = new FileReader(fileName);
@@ -36,7 +36,8 @@ public class Storage implements FileJob{
             bufferedReader.close();
             fileReader.close();
         } catch (IOException e) {
-            System.err.println("An error occurred while reading the file: " + e.getMessage());
+            throw new FileProblemsEx("An error occurred while reading the file: " + e.getMessage());
+
         }
         return sb.toString();
     }

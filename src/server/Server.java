@@ -2,12 +2,14 @@ package server;
 
 import account.Account;
 import client.Client;
+import exceptions.AlreadyLoggedEx;
+import exceptions.FileProblemsEx;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Server {
-    public static final String DEFAULT_NAME = "User";
+    public static final String DEFAULT_NAME = "Test";
     public static final String LOG_PATH = ".\\src\\server\\log.txt";
     private final String IP = "127.0.0.1";
     private final String PORT = "8080";
@@ -23,30 +25,34 @@ public class Server {
         whiteList.add(new Account(DEFAULT_NAME+"2", "1234", IP, PORT));
     }
 
-    public Server(FileJob storage) {
+    public Server(ServerView serverView, FileJob storage) {
         clientList = new ArrayList<>();
-        this.serverView = new ServerGUI(this);
+        this.serverView = serverView;
         this.fileJob = storage;
     }
 
-    public String readFromLog() {
+    public String readFromLog() throws FileProblemsEx {
         return fileJob.read(LOG_PATH);
     }
+    public void writeMessageToLog(String text) throws FileProblemsEx {
+        serverView.displayMessage(text);
+        fileJob.write(text, LOG_PATH);
+        answerAll(text);
+    }
 
-
-
-    public boolean checkConnection(Client client) {
+    public boolean checkConnection(Client client) throws AlreadyLoggedEx {
         if (isServerWorking) {
+            for (Client c : clientList) {
+                if (c.getUser().equals(client.getUser())){
+                    throw new AlreadyLoggedEx("Already Logged in");
+                }
+            }
             return whiteList.contains(client.getUser());
         }
         return false;
     }
 
-    public void writeMessageToLog(String text) {
-        serverView.printToMessageLog(text);
-        fileJob.write(text, LOG_PATH);
-        answerAll(text);
-    }
+
 
     private void answerAll(String text) {
         for (Client client : clientList) {
@@ -69,7 +75,7 @@ public class Server {
         clientList.forEach((el) -> {
             el.displayMessage("Disconnected\n");
             el.disconnect();
-            sendMessageToTempLog("User " + el.getUserName() + " is disconnected\n");
+//            sendMessageToTempLog("User " + el.getUserName() + " is disconnected\n");
         });
         clientList.clear();
     }
@@ -81,5 +87,4 @@ public class Server {
     public void setServerWorking(boolean serverWorking) {
         isServerWorking = serverWorking;
     }
-
 }

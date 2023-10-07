@@ -1,5 +1,7 @@
 package server;
 
+import exceptions.FileProblemsEx;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -13,8 +15,8 @@ public class ServerGUI extends JFrame implements ServerView {
     private JButton btnStart, btnStop;
     private JTextArea messageLog, tempLogArea;
 
-    public ServerGUI(Server server) {
-        this.server = server;
+    public ServerGUI(FileJob storage) {
+        this.server = new Server(this, storage);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setBounds(POS_X, POS_Y, WIDTH, HEIGHT);
         setTitle("Chat Server");
@@ -27,7 +29,11 @@ public class ServerGUI extends JFrame implements ServerView {
         btnStart.addActionListener(e -> {
             if (!server.isServerWorking()) {
                 server.setServerWorking(true);
-                messageLog.setText(server.readFromLog());
+                try {
+                    messageLog.setText(server.readFromLog());
+                } catch (FileProblemsEx ex) {
+                    printMessageToTempLog("Can`t load history, contact to administrator\n");
+                }
                 tempLogArea.append("Server started\n");
             } else {
                 tempLogArea.append("Server already started\n");
@@ -56,7 +62,7 @@ public class ServerGUI extends JFrame implements ServerView {
     }
 
     @Override
-    public void printToMessageLog(String message) {
+    public void displayMessage(String message) {
         messageLog.append(message);
     }
 
@@ -65,4 +71,8 @@ public class ServerGUI extends JFrame implements ServerView {
         tempLogArea.append(message);
     }
 
+    @Override
+    public Server getServer() {
+        return server;
+    }
 }

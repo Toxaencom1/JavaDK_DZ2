@@ -1,8 +1,10 @@
 package server;
 
 public interface ServerView {
-    void printToMessageLog(String text);
+    void displayMessage(String text);
 
     void printMessageToTempLog(String message);
+
+    Server getServer();
 
 }

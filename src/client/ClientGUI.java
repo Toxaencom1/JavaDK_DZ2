@@ -1,12 +1,16 @@
 package client;
 
 import account.Account;
+import exceptions.AlreadyLoggedEx;
+import exceptions.FileProblemsEx;
 import server.Server;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -27,9 +31,9 @@ public class ClientGUI extends JFrame implements ClientView {
     Component loginPassPanel;
     Component disconnectPanel;
 
-    public ClientGUI(Client client) {
-        this.client = client;
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    public ClientGUI(Server server) {
+        this.client = new Client(this, server);
+//        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(POS_X - WIDTH, POS_Y, WIDTH, HEIGHT);
         setTitle("Chat Client");
         setResizable(true);
@@ -46,6 +50,16 @@ public class ClientGUI extends JFrame implements ClientView {
         add(scrollPane);
         add(mainBottom, BorderLayout.SOUTH);
         setVisible(true);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if (client.isConnected()) {
+                    disconnect();
+                    client.removeFromList();
+                }
+                dispose();
+            }
+        });
     }
 
     private Component disconnectPanel() {
@@ -61,7 +75,6 @@ public class ClientGUI extends JFrame implements ClientView {
         btnDisc.addActionListener(e -> {
             disconnect();
             client.removeFromList();
-            client.sendMessageToTempLog(client.getUserName() + " is disconnected\n");
         });
         return discPanel;
     }
@@ -73,7 +86,7 @@ public class ClientGUI extends JFrame implements ClientView {
         textFieldPort = new JTextField();
         textFieldPort.setText("8080");
         textFieldLogin = new JTextField();
-        textFieldLogin.setText(Server.DEFAULT_NAME+"1");
+        textFieldLogin.setText(Server.DEFAULT_NAME + "1");
         passwordField = new JPasswordField();
         passwordField.setText("1234");
         btnLogin = new JButton("Login");
@@ -118,16 +131,31 @@ public class ClientGUI extends JFrame implements ClientView {
             user.setName(textFieldLogin.getText());
             user.setPass(passwordField.getText());
             client.setUser(user);
-            if (client.checkUserToConnect()) {
-                client.setConnected(true);
-                client.appendToList();
-                client.sendMessageToTempLog("User " + client.getUserName() + " is connected\n");
-                switchPanel();
-                loginName.setText("You are logged as: " + client.getUserName());
-                textArea.setText(client.getHistory());
-                JOptionPane.showMessageDialog(textArea, "You are logged in as: " + user.getName());
-            } else {
-                JOptionPane.showMessageDialog(panelLogin, "Login or password do not match");
+            try {
+                if (client.checkUserToConnect()) {
+                    client.setConnected(true);
+                    client.appendToList();
+                    client.sendMessageToTempLog("User " + client.getUserName() + " is connected\n");
+                    switchPanel();
+                    loginName.setText("You are logged as: " + client.getUserName());
+                    try {
+                        textArea.setText(client.getHistory());
+                    } catch (FileProblemsEx e) {
+                        client.sendMessageToTempLog(client.getUserName() + " can`t load history\n");
+                        JOptionPane.showMessageDialog(textArea,
+                                "Can`t load history, contact to administrator");
+
+                    }
+                    JOptionPane.showMessageDialog(textArea, "You are logged in as: "
+                            + user.getName());
+                } else {
+                    JOptionPane.showMessageDialog(panelLogin,
+                            "Login or password do not match");
+                }
+            } catch (AlreadyLoggedEx e) {
+                client.sendMessageToTempLog(client.getUserName() + " already logged in\n");
+                JOptionPane.showMessageDialog(textArea,
+                        user.getName() + " is already logged in");
             }
         } else {
             JOptionPane.showMessageDialog(panelLogin, "Server is offline");
@@ -142,7 +170,13 @@ public class ClientGUI extends JFrame implements ClientView {
             String formattedMessage = String.format(formattedDate + " "
                     + client.getUserName() + ": "
                     + textFieldSend.getText() + "\n");
-            client.sendMessage(formattedMessage);
+            try {
+                client.sendMessage(formattedMessage);
+            } catch (FileProblemsEx e) {
+                client.sendMessageToTempLog(client.getUserName() + " is having problems sending a message");
+                JOptionPane.showMessageDialog(textArea,
+                        "Access denied, contact to administrator");
+            }
             client.sendMessageToTempLog(formattedMessage);
             textFieldSend.setText("");
         } else {
@@ -150,8 +184,8 @@ public class ClientGUI extends JFrame implements ClientView {
         }
     }
 
-    public void switchPanel(){
-        if (panelLogin.isVisible()){
+    public void switchPanel() {
+        if (panelLogin.isVisible()) {
             panelLogin.setVisible(false);
             mainNorth.removeAll();
             mainNorth.add(disconnectPanel);
@@ -175,6 +209,7 @@ public class ClientGUI extends JFrame implements ClientView {
     @Override
     public void disconnect() {
         client.setConnected(false);
+        client.sendMessageToTempLog(client.getUserName() + " is disconnected\n");
         switchPanel();
     }
 }

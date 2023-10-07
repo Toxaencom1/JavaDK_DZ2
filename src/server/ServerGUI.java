@@ -32,7 +32,7 @@ public class ServerGUI extends JFrame implements ServerView {
                 try {
                     messageLog.setText(server.readFromLog());
                 } catch (FileProblemsEx ex) {
-                    printMessageToTempLog("Can`t load history, contact to administrator\n");
+                    printMessage("Can`t load history, contact to administrator\n");
                 }
                 tempLogArea.append("Server started\n");
             } else {
@@ -62,12 +62,7 @@ public class ServerGUI extends JFrame implements ServerView {
     }
 
     @Override
-    public void displayMessage(String message) {
-        messageLog.append(message);
-    }
-
-    @Override
-    public void printMessageToTempLog(String message) {
+    public void printMessage(String message) {
         tempLogArea.append(message);
     }
 

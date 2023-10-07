@@ -16,7 +16,8 @@ import java.util.Date;
 
 
 public class ClientGUI extends JFrame implements ClientView {
-
+    private static final String DEFAULT_IP = "127.0.0.1";
+    private static final String DEFAULT_PORT = "8080";
     private static final int POS_X = 1920;
     private static final int POS_Y = 0;
     private static final int WIDTH = 600;
@@ -33,7 +34,6 @@ public class ClientGUI extends JFrame implements ClientView {
 
     public ClientGUI(Server server) {
         this.client = new Client(this, server);
-//        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(POS_X - WIDTH, POS_Y, WIDTH, HEIGHT);
         setTitle("Chat Client");
         setResizable(true);
@@ -82,13 +82,13 @@ public class ClientGUI extends JFrame implements ClientView {
     private Component loginPassPanel() {
         panelLogin = new JPanel(new GridLayout(2, 3));
         textFieldIP = new JTextField();
-        textFieldIP.setText("127.0.0.1");
+        textFieldIP.setText(DEFAULT_IP);
         textFieldPort = new JTextField();
-        textFieldPort.setText("8080");
+        textFieldPort.setText(DEFAULT_PORT);
         textFieldLogin = new JTextField();
         textFieldLogin.setText(Server.DEFAULT_NAME + "1");
         passwordField = new JPasswordField();
-        passwordField.setText("1234");
+        passwordField.setText(Server.DEFAULT_PASS);
         btnLogin = new JButton("Login");
         btnLogin.addActionListener(e -> {
             connectToServer();
@@ -132,16 +132,16 @@ public class ClientGUI extends JFrame implements ClientView {
             user.setPass(passwordField.getText());
             client.setUser(user);
             try {
-                if (client.checkUserToConnect()) {
+                if (client.checkUser()) {
                     client.setConnected(true);
                     client.appendToList();
-                    client.sendMessageToTempLog("User " + client.getUserName() + " is connected\n");
-                    switchPanel();
+                    client.sendMessageToServer("User " + client.getUserName() + " is connected\n");
+                    switchLoginPanel();
                     loginName.setText("You are logged as: " + client.getUserName());
                     try {
                         textArea.setText(client.getHistory());
                     } catch (FileProblemsEx e) {
-                        client.sendMessageToTempLog(client.getUserName() + " can`t load history\n");
+                        client.sendMessageToServer(client.getUserName() + " can`t load history\n");
                         JOptionPane.showMessageDialog(textArea,
                                 "Can`t load history, contact to administrator");
 
@@ -153,7 +153,7 @@ public class ClientGUI extends JFrame implements ClientView {
                             "Login or password do not match");
                 }
             } catch (AlreadyLoggedEx e) {
-                client.sendMessageToTempLog(client.getUserName() + " already logged in\n");
+                client.sendMessageToServer(client.getUserName() + " already logged in\n");
                 JOptionPane.showMessageDialog(textArea,
                         user.getName() + " is already logged in");
             }
@@ -171,20 +171,20 @@ public class ClientGUI extends JFrame implements ClientView {
                     + client.getUserName() + ": "
                     + textFieldSend.getText() + "\n");
             try {
-                client.sendMessage(formattedMessage);
+                client.writeMessage(formattedMessage);
             } catch (FileProblemsEx e) {
-                client.sendMessageToTempLog(client.getUserName() + " is having problems sending a message");
+                client.sendMessageToServer(client.getUserName() + " is having problems sending a message");
                 JOptionPane.showMessageDialog(textArea,
                         "Access denied, contact to administrator");
             }
-            client.sendMessageToTempLog(formattedMessage);
+            client.sendMessageToServer(formattedMessage);
             textFieldSend.setText("");
         } else {
             JOptionPane.showMessageDialog(panelLogin, "Connection failed");
         }
     }
 
-    public void switchPanel() {
+    public void switchLoginPanel() {
         if (panelLogin.isVisible()) {
             panelLogin.setVisible(false);
             mainNorth.removeAll();
@@ -209,7 +209,7 @@ public class ClientGUI extends JFrame implements ClientView {
     @Override
     public void disconnect() {
         client.setConnected(false);
-        client.sendMessageToTempLog(client.getUserName() + " is disconnected\n");
-        switchPanel();
+        client.sendMessageToServer(client.getUserName() + " is disconnected\n");
+        switchLoginPanel();
     }
 }

@@ -16,7 +16,7 @@ public class Client {
         this.clientView = clientView;
     }
 
-    public boolean checkUserToConnect() throws AlreadyLoggedEx {
+    public boolean checkUser() throws AlreadyLoggedEx {
         return server.checkConnection(this);
     }
 
@@ -30,12 +30,12 @@ public class Client {
         return server.readFromLog();
     }
 
-    public void sendMessage(String text) throws FileProblemsEx {
+    public void writeMessage(String text) throws FileProblemsEx {
         server.writeMessageToLog(text);
     }
 
-    public void sendMessageToTempLog(String message) {
-        server.sendMessageToTempLog(message);
+    public void sendMessageToServer(String message) {
+        server.showMessage(message);
     }
 
     public void appendToList() {
@@ -46,7 +46,7 @@ public class Client {
         server.clientRemove(this);
     }
 
-    public void displayMessage(String message) {
+    public void showMessage(String message) {
         clientView.printMessage(message);
     }
 

@@ -5,6 +5,4 @@ public interface ServerView {
 
     void printMessageToTempLog(String message);
 
-    Server getServer();
-
 }

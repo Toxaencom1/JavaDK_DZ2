@@ -12,6 +12,7 @@ import java.util.Date;
 
 
 public class ClientGUI extends JFrame implements ClientView {
+
     private static final int POS_X = 1920;
     private static final int POS_Y = 0;
     private static final int WIDTH = 600;
@@ -20,12 +21,14 @@ public class ClientGUI extends JFrame implements ClientView {
     private final Client client;
     private JTextArea textArea;
     private JTextField textFieldLogin, textFieldIP, textFieldPort, passwordField, textFieldSend;
-    private JPanel panelLogin;
+    private JPanel panelLogin, mainNorth, discPanel;
     private JButton btnLogin;
-    private JLabel loginName = new JLabel("");
+    private JLabel loginName;
+    Component loginPassPanel;
+    Component disconnectPanel;
 
-    public ClientGUI(Server server) {
-        this.client = new Client(this, server);
+    public ClientGUI(Client client) {
+        this.client = client;
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(POS_X - WIDTH, POS_Y, WIDTH, HEIGHT);
         setTitle("Chat Client");
@@ -33,14 +36,34 @@ public class ClientGUI extends JFrame implements ClientView {
         textArea = new JTextArea();
         JScrollPane scrollPane = new JScrollPane(textArea);
         textArea.setEditable(false);
-        JPanel mainNorth = new JPanel(new GridLayout(1, 1));
+        mainNorth = new JPanel(new GridLayout(1, 1));
         JPanel mainBottom = new JPanel(new GridLayout(1, 1));
-        mainNorth.add(loginPassPanel());
+        loginPassPanel = loginPassPanel();
+        disconnectPanel = disconnectPanel();
+        mainNorth.add(loginPassPanel);
         mainBottom.add(sendMessagePanel());
         add(mainNorth, BorderLayout.NORTH);
         add(scrollPane);
         add(mainBottom, BorderLayout.SOUTH);
         setVisible(true);
+    }
+
+    private Component disconnectPanel() {
+        discPanel = new JPanel(new GridLayout(2, 3));
+        JButton btnDisc = new JButton("Disconnect");
+        loginName = new JLabel("");
+        discPanel.add(new JLabel());
+        discPanel.add(new JLabel());
+        discPanel.add(loginName);
+        discPanel.add(new JLabel());
+        discPanel.add(new JLabel());
+        discPanel.add(btnDisc);
+        btnDisc.addActionListener(e -> {
+            disconnect();
+            client.removeFromList();
+            client.sendMessageToTempLog(client.getUserName() + " is disconnected\n");
+        });
+        return discPanel;
     }
 
     private Component loginPassPanel() {
@@ -50,7 +73,7 @@ public class ClientGUI extends JFrame implements ClientView {
         textFieldPort = new JTextField();
         textFieldPort.setText("8080");
         textFieldLogin = new JTextField();
-        textFieldLogin.setText("Anton");
+        textFieldLogin.setText(Server.DEFAULT_NAME+"1");
         passwordField = new JPasswordField();
         passwordField.setText("1234");
         btnLogin = new JButton("Login");
@@ -59,7 +82,7 @@ public class ClientGUI extends JFrame implements ClientView {
         });
         panelLogin.add(textFieldIP);
         panelLogin.add(textFieldPort);
-        panelLogin.add(loginName);
+        panelLogin.add(new JLabel(""));
         panelLogin.add(textFieldLogin);
         panelLogin.add(passwordField);
         panelLogin.add(btnLogin);
@@ -93,14 +116,14 @@ public class ClientGUI extends JFrame implements ClientView {
             user.setIp(textFieldIP.getText());
             user.setPort(textFieldPort.getText());
             user.setName(textFieldLogin.getText());
-            loginName.setText(textFieldLogin.getText());
             user.setPass(passwordField.getText());
             client.setUser(user);
             if (client.checkUserToConnect()) {
                 client.setConnected(true);
-                client.appendToList(this);
-                client.sendMessageToTempLog("User " + client.getUser().getName() + " is connected\n");
-                panelLogin.setVisible(false);
+                client.appendToList();
+                client.sendMessageToTempLog("User " + client.getUserName() + " is connected\n");
+                switchPanel();
+                loginName.setText("You are logged as: " + client.getUserName());
                 textArea.setText(client.getHistory());
                 JOptionPane.showMessageDialog(textArea, "You are logged in as: " + user.getName());
             } else {
@@ -117,7 +140,7 @@ public class ClientGUI extends JFrame implements ClientView {
             Date currentDate = new Date();
             String formattedDate = sdf.format(currentDate);
             String formattedMessage = String.format(formattedDate + " "
-                    + client.getUser().getName() + ": "
+                    + client.getUserName() + ": "
                     + textFieldSend.getText() + "\n");
             client.sendMessage(formattedMessage);
             client.sendMessageToTempLog(formattedMessage);
@@ -127,19 +150,31 @@ public class ClientGUI extends JFrame implements ClientView {
         }
     }
 
+    public void switchPanel(){
+        if (panelLogin.isVisible()){
+            panelLogin.setVisible(false);
+            mainNorth.removeAll();
+            mainNorth.add(disconnectPanel);
+            discPanel.setVisible(true);
+        } else {
+            discPanel.setVisible(false);
+            mainNorth.removeAll();
+            mainNorth.add(loginPassPanel);
+            panelLogin.setVisible(true);
+        }
+
+    }
+
     @Override
     public void printMessage(String text) {
-        textArea.append(text);
+        if (client.isConnected()) {
+            textArea.append(text);
+        }
     }
 
     @Override
     public void disconnect() {
-        client.disconnect();
-        panelLogin.setVisible(true);
-    }
-
-    @Override
-    public String getLoginName() {
-        return loginName.getText();
+        client.setConnected(false);
+        switchPanel();
     }
 }

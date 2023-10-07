@@ -65,8 +65,4 @@ public class ServerGUI extends JFrame implements ServerView {
         tempLogArea.append(message);
     }
 
-    @Override
-    public Server getServer() {
-        return server;
-    }
 }

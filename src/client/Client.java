@@ -5,11 +5,13 @@ import server.Server;
 
 public class Client {
     private Account user;
+    private ClientView clientView;
     private final Server server;
     private boolean connected;
 
-    public Client(ClientView clientView, Server server) {
+    public Client(Server server) {
         this.server = server;
+        this.clientView = new ClientGUI(this);
     }
 
     public boolean checkUserToConnect() {
@@ -18,6 +20,7 @@ public class Client {
 
     public void disconnect() {
         setConnected(false);
+        clientView.disconnect();
     }
 
     public boolean isServerWorking() {
@@ -36,6 +39,10 @@ public class Client {
         return user;
     }
 
+    public String getUserName() {
+        return user.getName();
+    }
+
     public String getHistory() {
         return server.readFromLog();
     }
@@ -48,11 +55,18 @@ public class Client {
         server.sendMessageToTempLog(message);
     }
 
-    public void appendToList(ClientGUI clientGUI) {
-        server.clientAdd(clientGUI);
+    public void appendToList() {
+        server.clientAdd(this);
+    }
+    public void removeFromList() {
+        server.clientRemove(this);
     }
 
     public boolean isConnected() {
         return connected;
+    }
+
+    public void displayMessage(String message) {
+        clientView.printMessage(message);
     }
 }

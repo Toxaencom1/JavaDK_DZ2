@@ -15,6 +15,11 @@ public class ServerGUI extends JFrame implements ServerView {
     private JButton btnStart, btnStop;
     private JTextArea messageLog, tempLogArea;
 
+    /**
+     * Constructs a new `ServerGUI` with the specified file storage component.
+     *
+     * @param storage The file storage component for logging messages.
+     */
     public ServerGUI(FileJob storage) {
         this.server = new Server(this, storage);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -61,11 +66,21 @@ public class ServerGUI extends JFrame implements ServerView {
         setVisible(true);
     }
 
+    /**
+     * Prints a message to the user interface.
+     *
+     * @param message The text of the message to be displayed.
+     */
     @Override
     public void printMessage(String message) {
         tempLogArea.append(message);
     }
 
+    /**
+     * Retrieves the associated server instance.
+     *
+     * @return The server instance associated with this view.
+     */
     @Override
     public Server getServer() {
         return server;

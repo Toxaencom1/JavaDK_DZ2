@@ -32,6 +32,11 @@ public class ClientGUI extends JFrame implements ClientView {
     Component loginPassPanel;
     Component disconnectPanel;
 
+    /**
+     * Constructs a new `ClientGUI` with the specified server.
+     *
+     * @param server The server to connect to.
+     */
     public ClientGUI(Server server) {
         this.client = new Client(this, server);
         setBounds(POS_X - WIDTH, POS_Y, WIDTH, HEIGHT);
@@ -62,6 +67,11 @@ public class ClientGUI extends JFrame implements ClientView {
         });
     }
 
+    /**
+     * Creates the disconnection panel.
+     *
+     * @return The disconnection panel component.
+     */
     private Component disconnectPanel() {
         discPanel = new JPanel(new GridLayout(2, 3));
         JButton btnDisc = new JButton("Disconnect");
@@ -79,6 +89,12 @@ public class ClientGUI extends JFrame implements ClientView {
         return discPanel;
     }
 
+    /**
+     * Creates the login and password input panel.
+     * Has a login listener to login in server.
+     *
+     * @return The login and password input panel component.
+     */
     private Component loginPassPanel() {
         panelLogin = new JPanel(new GridLayout(2, 3));
         textFieldIP = new JTextField();
@@ -90,9 +106,7 @@ public class ClientGUI extends JFrame implements ClientView {
         passwordField = new JPasswordField();
         passwordField.setText(Server.DEFAULT_PASS);
         btnLogin = new JButton("Login");
-        btnLogin.addActionListener(e -> {
-            connectToServer();
-        });
+        btnLogin.addActionListener(e -> connectToServer());
         panelLogin.add(textFieldIP);
         panelLogin.add(textFieldPort);
         panelLogin.add(new JLabel(""));
@@ -102,6 +116,11 @@ public class ClientGUI extends JFrame implements ClientView {
         return panelLogin;
     }
 
+    /**
+     * Creates the send message panel.
+     *
+     * @return The send message panel component.
+     */
     private Component sendMessagePanel() {
         JPanel panelSendMessage = new JPanel(new GridLayout(1, 2));
         JButton btnSend = new JButton("Send");
@@ -115,14 +134,15 @@ public class ClientGUI extends JFrame implements ClientView {
                 }
             }
         });
-        btnSend.addActionListener(e -> {
-            sendMessage();
-        });
+        btnSend.addActionListener(e -> sendMessage());
         panelSendMessage.add(textFieldSend);
         panelSendMessage.add(btnSend);
         return panelSendMessage;
     }
 
+    /**
+     * Connects the client to the server.
+     */
     private void connectToServer() {
         if (client.isServerWorking()) {
             Account user = new Account();
@@ -162,6 +182,9 @@ public class ClientGUI extends JFrame implements ClientView {
         }
     }
 
+    /**
+     * Sends a message to chat.
+     */
     private void sendMessage() {
         if (client.isServerWorking() && client.isConnected()) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -184,7 +207,10 @@ public class ClientGUI extends JFrame implements ClientView {
         }
     }
 
-    public void switchLoginPanel() {
+    /**
+     * Switches between the login panel and the disconnection panel.
+     */
+    private void switchLoginPanel() {
         if (panelLogin.isVisible()) {
             panelLogin.setVisible(false);
             mainNorth.removeAll();
@@ -199,6 +225,11 @@ public class ClientGUI extends JFrame implements ClientView {
 
     }
 
+    /**
+     * Prints a message to the client's user interface.
+     *
+     * @param text The text of the message to be displayed.
+     */
     @Override
     public void printMessage(String text) {
         if (client.isConnected()) {
@@ -206,6 +237,9 @@ public class ClientGUI extends JFrame implements ClientView {
         }
     }
 
+    /**
+     * Disconnects the client from the server and send message.
+     */
     @Override
     public void disconnect() {
         client.setConnected(false);
